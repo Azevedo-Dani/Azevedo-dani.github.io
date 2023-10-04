@@ -1,21 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<style type="text/css">
-		body {
-			height: 100vh;
-			width: 100%;
-			background: white;
-			margin:0
-		}
-		video {
-			height: 1080px;
-			width: 1920px;
-			object-fit: cover;
-		}
-	</style>
+	<meta charset="UTF-8">
+	<title>Face Mesh Demo by Andy Kong</title>
+
+	<!-- Import latest version of TF.js-->
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+	<!-- Facemesh model import -->
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+
+	<!-- Our code goes in here -->
+	<script src="facemeshsetup.js"></script>
 </head>
-<body >
-<video  autoplay="autoplay" src="https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"/>
+
+<body style="background-color:ghostwhite;">
+
+<!-- HTML Canvas we're drawing onto -->
+<canvas id="facecanvas"></canvas>
+
+<!-- Video that handles the browser access to the camera. The transforms mirror the feed -->
+<video autoplay muted hidden playsinline id="video"  style="
+		-webkit-transform: scaleX(-1);
+		transform: scaleX(-1);
+		width: auto;
+		height: auto;">
+</video>
 </body>
 </html>
