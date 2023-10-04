@@ -14,17 +14,16 @@
 	<script src="facemeshsetup.js"></script>
 </head>
 
-<body style="background-color:ghostwhite;">
+<body style="background-color:ghostwhite;width: 100%;height: 100vh">
 
 <!-- HTML Canvas we're drawing onto -->
-<canvas id="facecanvas"></canvas>
 
 <!-- Video that handles the browser access to the camera. The transforms mirror the feed -->
 <video autoplay muted hidden playsinline id="video"  style="
 		-webkit-transform: scaleX(-1);
 		transform: scaleX(-1);
-		width: auto;
-		height: auto;">
+		width: 100%;
+		height: 100%;">
 </video>
 </body>
 </html>

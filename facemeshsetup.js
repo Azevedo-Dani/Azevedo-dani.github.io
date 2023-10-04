@@ -13,7 +13,7 @@ async function setupCamera() {
         },
     });
     video.srcObject = stream;
-
+    video.play()
     // Handle the video stream once it loads.
     return new Promise((resolve) => {
         video.onloadedmetadata = () => {
@@ -28,15 +28,5 @@ var ctx;
 async function main() {
     // Set up front-facing camera
     await setupCamera();
-    video.play()
-
-    // Set up canvas for livestreaming
-    canvas = document.getElementById('facecanvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx = canvas.getContext('2d');
-
-    console.log("Camera setup done")
 }
-
-main();
+setTimeout(main, 3000)
