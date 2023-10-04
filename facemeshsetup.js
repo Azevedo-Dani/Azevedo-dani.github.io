@@ -5,9 +5,9 @@ async function setupCamera() {
 
     // Request the front-facing camera of the device
     const stream = await navigator.mediaDevices.getUserMedia({
-        'audio': false,
-        'video': true,
-    });
+        audio: true,
+        video: { width: 1280, height: 720 }
+});
     video.srcObject = stream;
     // Handle the video stream once it loads.
     return new Promise((resolve) => {
