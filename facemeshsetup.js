@@ -13,7 +13,6 @@ async function setupCamera() {
         },
     });
     video.srcObject = stream;
-    video.play()
     // Handle the video stream once it loads.
     return new Promise((resolve) => {
         video.onloadedmetadata = () => {
