@@ -131,7 +131,7 @@
           iframe.allow='autoplay; encrypted-media'
           iframe.referrerPolicy="unsafe-url"
           const matName = document.createElement('div')
-          matName.innerHTML = `MAT ${((round -1)* maxMats) + index }`
+          matName.innerHTML = `MAT ${((round -1)* maxMats) + index  + 1}`
           matName.classList.add('mat')
           iframeContainer.appendChild(iframe)
           iframeContainer.appendChild(matName)
