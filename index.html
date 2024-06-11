@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Stream</title>
+    <title>My Website</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Concert+One&display=swap" rel="stylesheet">
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
     <style>
       body {
@@ -13,59 +17,47 @@
       }
        main {
         box-sizing: border-box;
-        padding: 8px;
         height: 100vh;
         min-height: 100vh;
         max-height: 100vh;
         width: 100%;
        }
-       .sponsor-line {
-        background-repeat: repeat-x;
-        background-position: center center;
-        background-size: auto 80%;
-        background-repeat: space;
-        width: 100%;
+       .event-name {
         height: 10%;
-        max-height: 10%;
-       }
-       .sponsor-line.one {
-        background-image: url("https://photos.smugmug.com/photos/i-N7cfmCq/1/C2Zc497TcNCNTPsMxcxm9zLZK35vR4bbDFrRmCCX4/S/i-N7cfmCq-S.png");
-       }
-       .sponsor-line.two {
-        background-image: url("https://photos.smugmug.com/photos/i-Z3ZjSNv/0/VnQptsX8BtWPsTJH7Jf6xNcTmJ6sXxwMMgfS2mMr/Th/i-Z3ZjSNv-Th.jpg");
-       }
-       .sponsor-line.three {
-        background-image: url("https://photos.smugmug.com/photos/i-SDbggdB/1/CbK5Jndf9Sk9hdrHTkvkWVtqhtgq6msTgcJbZPWCg/S/i-SDbggdB-S.png");
-       }
-      
-       .sponsor-column {
-        width: 10%;
-        height: 100%;
-        background-position: center;
-        background-size: 80% auto;
-        background-repeat: space;
-       }
-       .sponsor-column.one {
-        background-image: url("https://photos.smugmug.com/photos/i-zLpDwT6/1/FZxgDkdwMg895D5Tztn3WsJXLJRQvWdJ4dTTFP6pp/S/i-zLpDwT6-S.png");
-       }
-       .stream-line {
         display: flex;
         align-items: center;
         justify-content: center;
         width: 100%;
-        height: 35%;
+        color: white;
+        font-size: 48px;
+        font-family: "Concert One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
        }
-       .stream-line .stream {
-        position: relative;
-        width: 40%;
-        height: 100%;
+        iframe {
+       width: 100%;
+       height: 100%;
        }
 
-       .stream-line .stream .mat {
+       .videos {
+        overflow: hidden;
+        display: flex;
+        align-content: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        height: 70%;
+        max-height: 70%;
+        width: 100%;
+       }
+       .videos > div {
+        width: 33%;
+        aspect-ratio: 16/9;
+        position: relative;
+       }
+       .videos > div .mat {
         position: absolute;
         bottom: 10px;
-        left: 60px;
-        height: 10%;
+        left: 10px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -74,74 +66,60 @@
         background-color: transparent;
         font-size: 40px;
        }
-
-       .stream-line .stream iframe {
+       .sponsors {
+        height: 20%;
+        max-height: 20%;
+        min-height: 20%;
         width: 100%;
-        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        box-sizing: border-box;
        }
-       
+       .sponsors img {
+        height: 100%;
+        max-height: 100%;
+       }
       
     </style>
   </head>
   <body>
     <main>
-      <div class="sponsor-line one">
+      <div class="event-name" >
+        Dutch open no-gi 2024 powerd  by BJJ Fightgear
       </div>
-      <div class="stream-line">
-        <div class="stream" id="stream1">
-
+      <div class="videos">
+        <div>
+          <iframe src='https://unifight.one/embed/C43oytoNIRzwKwjsNqaK9w?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
+          <div class="mat">MAT 1</div>
         </div>
-
-        <div class="sponsor-column one"></div>
-        <div class="stream" id="stream2">
-
+        <div>
+        <iframe src='https://unifight.one/embed/rq26MHmmMnUgO3trqrAq4g?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
+        <div class="mat">MAT 2</div>
         </div>
-       
+        <div>
+          <iframe src='https://unifight.one/embed/zaVQgV9MZj5E95Tb65tb5g?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
+          <div class="mat">MAT 3</div>
+        </div>
+        <div>
+          <iframe src='https://unifight.one/embed/2ycyOsO7-AeXaodV9Xx3Jw?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
+          <div class="mat">MAT 4</div>
+        </div>
+        <div>
+          <iframe src='https://unifight.one/embed/hsf7afpIxjGeXL9quOnI3Q?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
+          <div class="mat">MAT 5</div>
+        </div>
+        <div>
+          <iframe src='https://unifight.one/embed/Pt4Dgy6irJM_FaFxVtjwOQ?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
+          <div class="mat">MAT 6</div>
+        </div>
       </div>
-      <div class="sponsor-line two"></div>
-      <div class="stream-line">
-        <div class="stream" id="stream3">
 
-        </div>
-        
-        <div class="sponsor-column one"></div>
-        <div class="stream " id="stream4">
-
-        </div>
-        
+      <div class="sponsors">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdAHXs23oDQL-H8h0o8G-C6T_PGYsx7gCvHqWQ_i8ixM5Ra22RKpXn7KYKWA4rHo8w-zY&usqp=CAU"/>
+                <img src="https://photos.smugmug.com/photos/i-zxvpv34/0/02e6c4e4/X3/i-zxvpv34-X3.png"/>
       </div>
-      <div class="sponsor-line three"></div>
-    </main>
+
   </body>
-  <script>
-    const streamUrls = ['70bTF15yj5B4QQvl_3WD0A', 'i6YnegnDH0ZTWsiKkapByg', 'J1-YQE-b-oMDUdyUMJEIbA', 'E6re1gomr92oeus5Aer_PQ', 'U09Xe8OGQEObbObuicR9Ow', 'lcB-FMD8YP3B_nPSfuwX5g', 'wd5EdfvQUKbUO179l9RBug', 'USOWfZ2UpzZ5wRKn_680XA']
-    const maxMats = 4
-    let round = 1
-    const playRound = () => {
-      const streamsToPlay = streamUrls.slice((round -1)* maxMats , maxMats * round)
-      streamsToPlay.forEach((stream, index) =>  {
-        const iframeContainer = document.getElementById(`stream${index + 1}`)
-        if (!iframeContainer){
-          console.error('No iframe')
-        } else {
-          iframeContainer.innerHTML =""
-          const iframe = document.createElement('iframe')
-          iframe.src=`https://unifight.one/embed/${stream}?autoplay=1`
-          iframe.frameBorder='0'
-          iframe.allow='autoplay; encrypted-media'
-          iframe.referrerPolicy="unsafe-url"
-          const matName = document.createElement('div')
-          matName.innerHTML = `MAT ${((round -1)* maxMats) + index  + 1}`
-          matName.classList.add('mat')
-          iframeContainer.appendChild(iframe)
-          iframeContainer.appendChild(matName)
-        }
-      })
-    }
-    playRound()
-    setInterval(() => {
-      round = round === 1 ? 2: 1
-      playRound()
-    }, 60000 * 2)
-  </script>
 </html>
