@@ -1,122 +1,385 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
+<html lang="fr">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>ASE STREAM</title>
+    <title>Météo App</title>
     <style>
-      body {
-        margin: 0;
-        background: black;
-        font-family: Arial, sans-serif;
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-      }
-       main {
-        box-sizing: border-box;
-        height: 100vh;
-        min-height: 100vh;
-        max-height: 100vh;
-        width: 100%;
-       }
-       .event-name {
-        height: 10%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        color: white;
-        font-size: 48px;
-        font-weight: 400;
-        font-style: normal;
-       }
-        iframe {
-       width: 100%;
-       height: 100%;
-       }
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: #2d2d2d;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
 
-       .videos {
-        overflow: hidden;
-        display: flex;
-        align-content: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        height: 70%;
-        max-height: 70%;
-        width: 100%;
-        gap: 8px;
-       }
-       .videos > div {
-        width: 33%;
-        aspect-ratio: 16/9;
-        position: relative;
-       }
-       .videos > div .mat {
-        position: absolute;
-        bottom: 10px;
-        left: 10px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        font-weight: bold;
-        background-color: transparent;
-        font-size: 40px;
-       }
-       .sponsors {
-        height: 20%;
-        max-height: 20%;
-        min-height: 20%;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px;
-        box-sizing: border-box;
-       }
-       .sponsors img {
-        height: 100%;
-        max-height: 100%;
-       }
-      
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .theme-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        .weather-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .weather-main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .location {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .temperature {
+            font-size: 4em;
+            font-weight: bold;
+        }
+
+        .weather-icon {
+            width: 100px;
+            height: 100px;
+        }
+
+        .weather-description {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .detail-item {
+            padding: 15px;
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 15px;
+        }
+
+        .forecast {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .forecast-item {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .show-forecast {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .show-forecast:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .weather-card {
+                padding: 20px;
+            }
+
+            .temperature {
+                font-size: 3em;
+            }
+
+            .weather-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .weather-details {
+                grid-template-columns: 1fr;
+            }
+
+            .forecast {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+
+        .footer {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            box-shadow: var(--shadow);
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer a:hover {
+            opacity: 0.8;
+        }
+
+        .credits {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+        }
     </style>
-  </head>
-  <body>
-    <main>
-      <div class="event-name" >
-        Dutch open no-gi 2024 powerd  by BJJ Fightgear
-      </div>
-      <div class="videos">
-        <div>
-          <iframe src='https://unifight.one/embed/C43oytoNIRzwKwjsNqaK9w?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
-          <div class="mat">MAT 1</div>
-        </div>
-        <div>
-        <iframe src='https://unifight.one/embed/rq26MHmmMnUgO3trqrAq4g?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
-        <div class="mat">MAT 2</div>
-        </div>
-        <div>
-          <iframe src='https://unifight.one/embed/zaVQgV9MZj5E95Tb65tb5g?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
-          <div class="mat">MAT 3</div>
-        </div>
-        <div>
-          <iframe src='https://unifight.one/embed/2ycyOsO7-AeXaodV9Xx3Jw?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
-          <div class="mat">MAT 4</div>
-        </div>
-        <div>
-          <iframe src='https://unifight.one/embed/hsf7afpIxjGeXL9quOnI3Q?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
-          <div class="mat">MAT 5</div>
-        </div>
-        <div>
-          <iframe src='https://unifight.one/embed/Pt4Dgy6irJM_FaFxVtjwOQ?autoplay=1' referrerpolicy="unsafe-url" frameborder='0' allow='autoplay; encrypted-media' allowfullscreen ></iframe>
-          <div class="mat">MAT 6</div>
-        </div>
-      </div>
+</head>
+<body>
+    <div class="theme-switch" onclick="toggleTheme()">
+        <span id="themeIcon">🌞</span>
+    </div>
 
-      <div class="sponsors">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdAHXs23oDQL-H8h0o8G-C6T_PGYsx7gCvHqWQ_i8ixM5Ra22RKpXn7KYKWA4rHo8w-zY&usqp=CAU"/>
-                <img src="https://photos.smugmug.com/photos/i-zxvpv34/0/02e6c4e4/X3/i-zxvpv34-X3.png"/>
-      </div>
+    <div class="container">
+        <div id="weather" class="loading">
+            Chargement de la météo...
+        </div>
+        
+        <footer class="footer">
+            <div class="credits">
+                <div>
+                    Données météorologiques fournies par 
+                    <a href="https://openweathermap.org/" target="_blank" rel="noopener">
+                        OpenWeather
+                    </a>
+                </div>
+                <div>
+                    Icônes météo par 
+                    <a href="https://openweathermap.org/weather-conditions" target="_blank" rel="noopener">
+                        OpenWeather Icons
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
 
-  </body>
+    <script>
+        console.log('Script chargé');
+
+        const API_KEY = 'afcff4b3bfaefc8e44163511b41e0467';
+        let forecastVisible = false;
+
+        async function getWeather(lat, lon) {
+            try {
+                console.log('Coordonnées:', lat, lon);
+
+                // Météo actuelle
+                const currentResponse = await fetch(
+                    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=fr`
+                );
+                
+                if (!currentResponse.ok) {
+                    throw new Error(`HTTP error! status: ${currentResponse.status}`);
+                }
+                
+                console.log('Réponse météo actuelle:', await currentResponse.clone().json());
+                const currentData = await currentResponse.json();
+
+                // Prévisions
+                const forecastResponse = await fetch(
+                    `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=fr`
+                );
+                
+                if (!forecastResponse.ok) {
+                    throw new Error(`HTTP error! status: ${forecastResponse.status}`);
+                }
+
+                console.log('Réponse prévisions:', await forecastResponse.clone().json());
+                const forecastData = await forecastResponse.json();
+
+                displayWeather(currentData, forecastData);
+            } catch (error) {
+                console.error('Erreur détaillée:', error);
+                document.getElementById('weather').innerHTML = 
+                    `Erreur lors du chargement de la météo: ${error.message}`;
+            }
+        }
+
+        function displayWeather(current, forecast) {
+            const weather = document.getElementById('weather');
+            const temp = Math.round(current.main.temp);
+            const feelsLike = Math.round(current.main.feels_like);
+
+            weather.innerHTML = `
+                <div class="weather-card">
+                    <div class="weather-main">
+                        <div class="location">${current.name}</div>
+                        <img class="weather-icon" 
+                             src="https://openweathermap.org/img/wn/${current.weather[0].icon}@2x.png" 
+                             alt="${current.weather[0].description}">
+                        <div class="temperature">${temp}°C</div>
+                        <div class="weather-description">${current.weather[0].description}</div>
+                    </div>
+
+                    <div class="weather-details">
+                        <div class="detail-item">
+                            <div>Ressenti</div>
+                            <div>${feelsLike}°C</div>
+                        </div>
+                        <div class="detail-item">
+                            <div>Humidité</div>
+                            <div>${current.main.humidity}%</div>
+                        </div>
+                        <div class="detail-item">
+                            <div>Vent</div>
+                            <div>${Math.round(current.wind.speed * 3.6)} km/h</div>
+                        </div>
+                    </div>
+
+                    <button class="show-forecast" onclick="toggleForecast()">
+                        Voir les prévisions
+                    </button>
+
+                    <div class="forecast" id="forecast">
+                        ${createForecastHTML(forecast)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function createForecastHTML(forecast) {
+            const dailyForecasts = forecast.list.filter(item => 
+                item.dt_txt.includes('12:00:00')
+            ).slice(0, 5);
+
+            return dailyForecasts.map(day => `
+                <div class="forecast-item">
+                    <div>${new Date(day.dt * 1000).toLocaleDateString('fr-FR', {weekday: 'short'})}</div>
+                    <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" 
+                         alt="${day.weather[0].description}">
+                    <div>${Math.round(day.main.temp)}°C</div>
+                </div>
+            `).join('');
+        }
+
+        function toggleForecast() {
+            const forecast = document.getElementById('forecast');
+            forecastVisible = !forecastVisible;
+            forecast.style.display = forecastVisible ? 'grid' : 'none';
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.textContent = '🌞';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 
+                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('themeIcon').textContent = '🌙';
+            }
+        }
+
+        // Initialisation
+        loadTheme();
+
+        if (navigator.geolocation) {
+            console.log('Géolocalisation supportée');
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    console.log('Position obtenue:', position);
+                    getWeather(position.coords.latitude, position.coords.longitude);
+                },
+                error => {
+                    console.error('Erreur de géolocalisation détaillée:', error);
+                    document.getElementById('weather').innerHTML = 
+                        `Erreur de géolocalisation: ${error.message}. Veuillez autoriser l'accès à votre position.`;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            console.log('Géolocalisation non supportée');
+            document.getElementById('weather').innerHTML = 
+                'La géolocalisation n\'est pas supportée par votre navigateur.';
+        }
+    </script>
+</body>
 </html>
