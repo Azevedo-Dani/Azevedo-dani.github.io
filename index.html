@@ -3,22 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Window Size</title>
+  <title>Window and Screen Size</title>
 </head>
 <body>
-  <h1>Check Window Size</h1>
+  <h1>Window and Screen Size</h1>
   <p id="size"></p>
 
   <script>
-    function updateWindowSize() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      document.getElementById("size").textContent = `Width: ${width}px, Height: ${height}px`;
+    function updateSizeInfo() {
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const screenWidth = screen.width;
+      const screenHeight = screen.height;
+
+      document.getElementById("size").textContent = `
+        Window Size: ${windowWidth}px x ${windowHeight}px
+        Screen Size: ${screenWidth}px x ${screenHeight}px
+      `;
     }
+
     // Call on page load
-    updateWindowSize();
-    // Update size when window is resized
-    window.addEventListener("resize", updateWindowSize);
+    updateSizeInfo();
+
+    // Update sizes on window resize
+    window.addEventListener("resize", updateSizeInfo);
   </script>
 </body>
 </html>
