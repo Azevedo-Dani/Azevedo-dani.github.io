@@ -4,56 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modale avec lien externe</title>
-    <style>
-        #maModale {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #f0f0f0;
-            padding: 20px;
-            border: 1px solid #ccc;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            z-index: 1000; /* Pour s'assurer qu'elle est au-dessus du reste */
-        }
-    </style>
 </head>
 <body>
-
-    <h1>Page principale</h1>
-    <button onclick="afficherModale()">Afficher la modale</button>
-
-    <div id="maModale" style="display: none;">
-        <h2>Contenu de la modale</h2>
-        <p>Voici un lien qui devrait s'ouvrir dans une nouvelle fenêtre :</p>
-        <a href="https://www.google.com" id="monLienExterne">Ouvrir Google</a>
-        <button onclick="fermerModale()">Fermer la modale</button>
-    </div>
-
     <script>
-        function afficherModale() {
-            document.getElementById('maModale').style.display = 'block';
-        }
-
-        function fermerModale() {
-            document.getElementById('maModale').style.display = 'none';
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            const lienExterne = document.getElementById('monLienExterne');
-
-            if (lienExterne) {
-                lienExterne.addEventListener('click', function(event) {
-                    // Empêcher le comportement par défaut du lien (la navigation dans la modale)
-                    event.preventDefault();
-
-                    // Récupérer l'URL du lien
-                    const url = this.getAttribute('href');
-
-                    // Ouvrir l'URL dans une nouvelle fenêtre/onglet du navigateur principal
-                    window.open(url, '_blank');
-                });
-            }
+            // Empêcher le comportement par défaut du lien (la navigation dans la modale)
+            event.preventDefault();
+            const url = 'https://www.google.com'
+            window.open(url, '_blank');
         });
     </script>
 
