@@ -5,37 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Popup Content</title>
     <script>
-      window.onload = function () {
-        // Tentative d'ouvrir une nouvelle fenêtre dans le navigateur parent.
-        try {
-          const newWindow = window.opener.open(
-            'https://www.example.com', // Remplacez par l'URL souhaitée
-            '_blank',
-            'width=800,height=600',
-          );
-          if (newWindow) {
-             newWindow.focus();
-          }
-        } catch (error) {
-          console.error('Erreur lors de l\'ouverture de la fenêtre à partir du popup:', error);
-          // Gérer l'erreur (par exemple, afficher un message à l'utilisateur)
-           const errorDiv = document.createElement('div');
-            errorDiv.style.color = 'red';
-            errorDiv.textContent = 'Une erreur s\'est produite lors de l\'ouverture de la nouvelle fenêtre. Veuillez vérifier les paramètres de votre navigateur.';
-            document.body.appendChild(errorDiv);
-        }
-
-        // Envoie un message à la fenêtre parente (optionnel, pour le débogage ou la communication).
-        window.opener.postMessage('Popup chargée et tentative d\'ouverture de nouvelle fenêtre.', '*');
-      };
-    </script>
   </head>
   <body>
-    <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-      <p style="font-size: 1.2em;">
-        Ceci est le contenu du popup.  Le script va tenter d'ouvrir une nouvelle
-        fenêtre dans le navigateur principal.
-      </p>
-    </div>
+    <div>hello word</div>
   </body>
 </html>
