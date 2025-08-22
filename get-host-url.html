@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iFrame Content</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            margin: 0;
+            background-color: #e6e6e6;
+            color: #000;
+            text-align: center;
+        }
+        h2 {
+            padding: 10px;
+            background-color: #dcdcdc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="message-container"></div>
+    <script>
+        try {
+            // Tente d'obtenir l'URL de la page parent.
+            const parentUrl = window.parent.location.href;
+            
+            // Affiche l'URL de la page parent.
+            document.getElementById('message-container').innerHTML = '<h2>Je suis chargé par l\'URL : <br>' + parentUrl + '</h2>';
+            
+        } catch (e) {
+            // Gère l'erreur de sécurité si l'accès est bloqué.
+            console.error("Erreur d'accès à l'URL du parent :", e);
+            document.getElementById('message-container').innerHTML = '<h2>Je ne peux pas déterminer l\'URL du parent <br> en raison des restrictions de sécurité (Same-Origin Policy).</h2>';
+        }
+    </script>
+</body>
+</html>
