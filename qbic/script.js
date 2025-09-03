@@ -38,7 +38,12 @@
 // }
 
 // Usage:
-
+const log = function(message) {
+    const container = document.getElementById('logs')
+    const containerMessage = document.createElement('div')
+    containerMessage.innerText = message
+    container.appendChild(containerMessage)
+}
 const playContent = async function(urlToPlay) {
     const body = {
         pkgname: 'com.qbic.smilplayer',
@@ -56,7 +61,11 @@ const playContent = async function(urlToPlay) {
     return { ok: true };
 }
 
-playContent('https://phil1618.github.io/event-27788-or-download.mp4').catch(console.error)
+log('START PLAY CONTENT')
+
+playContent('https://phil1618.github.io/event-27788-or-download.mp4').catch(err => {
+    log('CANNOT PLAY')
+})
 // saveUrlToLocalAndPlay({
 //     url: 'https://phil1618.github.io/event-27788-or-download.mp4',
 //     localFilename: 'event-27788.mp4'
