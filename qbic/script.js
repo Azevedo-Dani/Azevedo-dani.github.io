@@ -38,34 +38,34 @@
 // }
 
 // Usage:
-const log = function(message) {
-    const container = document.getElementById('logs')
-    const containerMessage = document.createElement('div')
+var log = function(message) {
+    var container = document.getElementById('logs')
+    var containerMessage = document.createElement('div')
     containerMessage.innerText = message
     container.appendChild(containerMessage)
 }
-const playContent = async function(urlToPlay) {
-    const body = {
-        pkgname: 'com.qbic.smilplayer',
-        classnamescript: 'com.qbic.smilplayer.PlayerActivity',
-        action: 'android.intent.action.VIEW',
-        flags: ['0x10000000'], // FLAG_ACTIVITY_NEW_TASK
-        data: urlToPlay
-    };
-    const start = await fetch('http://localhost:8080/v1/task/start_app', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify(body),
-    });
-    if (!start.ok) throw new Error(`start_app failed: ${start.status}`);
-    return { ok: true };
-}
+// const playContent = async function(urlToPlay) {
+//     const body = {
+//         pkgname: 'com.qbic.smilplayer',
+//         classnamescript: 'com.qbic.smilplayer.PlayerActivity',
+//         action: 'android.intent.action.VIEW',
+//         flags: ['0x10000000'], // FLAG_ACTIVITY_NEW_TASK
+//         data: urlToPlay
+//     };
+//     const start = await fetch('http://localhost:8080/v1/task/start_app', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json; charset=utf-8' },
+//         body: JSON.stringify(body),
+//     });
+//     if (!start.ok) throw new Error(`start_app failed: ${start.status}`);
+//     return { ok: true };
+// }
 
 log('START PLAY CONTENT')
 
-playContent('https://phil1618.github.io/event-27788-or-download.mp4').catch(err => {
-    log('CANNOT PLAY')
-})
+// playContent('https://phil1618.github.io/event-27788-or-download.mp4').catch(err => {
+//     log('CANNOT PLAY')
+// })
 // saveUrlToLocalAndPlay({
 //     url: 'https://phil1618.github.io/event-27788-or-download.mp4',
 //     localFilename: 'event-27788.mp4'
