@@ -4,10 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exemple TypeScript</title>
+    <style>
+        body {
+            margin:0;
+            height: 100vh;
+            position: relative;
+        }
+        #logs {
+            top: 0;
+            right: 0;
+            position: absolute;
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        #logs .log {
+            color: blue
+        }
+
+        #logs .error {
+            color: red
+        }
+        #logs .success {
+            color: green
+        }
+        video {
+            width: 50%;
+            aspect-ratio: 16/9;
+        }
+        button {
+            width: 100px;
+            height: 80px;
+        }
+    </style>
 </head>
 <body>
-<h1>Ceci est une page HTML.</h1>
-<div id="logs"></div>
-<script src="script.js"></script>
+<div id="containerVideo">
+</div>
+<button onclick="play(1)" >PLAY1</button>
+<button onclick="play(2)" >PLAY2</button>
+<button onclick="play(3)" >PLAY3</button>
+<button onclick="downloadAssets()" >Download</button>
+<button onclick="clearAssets()" >Clear assets</button>
+<button onclick="clearLogs()" >Clear logs</button>
+<button onclick="reloadApp()" >Reload</button>
+<div id="logs">
+</div>
+<script src="script.js?v135"></script>
 </body>
 </html>
