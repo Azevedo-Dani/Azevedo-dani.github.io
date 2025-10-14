@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inputs Centrés</title>
+    <style>
+        /*
+         * Styles pour centrer le contenu
+         */
+        body {
+            /* Définit la hauteur de la page à 100% de la hauteur de la fenêtre (viewport) */
+            height: 100vh; 
+            margin: 0; /* Supprime la marge par défaut du body */
+            display: flex; /* Active Flexbox pour le centrage */
+            justify-content: center; /* Centre horizontalement les éléments enfants */
+            align-items: center; /* Centre verticalement les éléments enfants */
+            font-family: Arial, sans-serif; /* Police de caractère simple */
+            background-color: #f4f4f9; /* Couleur de fond légère */
+        }
+
+        .container {
+            /* Un conteneur pour les inputs pour une meilleure organisation */
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Assure que le texte/labels à l'intérieur est centré si besoin */
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block; /* Chaque label prend sa propre ligne */
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 10px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* S'assure que padding et border sont inclus dans la largeur/hauteur */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Formulaire Simple</h1>
+        
+        <form>
+            <div class="input-group">
+                <label for="text-input">Saisie de Texte :</label>
+                <input type="text" id="text-input" name="text_field" placeholder="Entrez du texte ici">
+            </div>
+            
+            <div class="input-group">
+                <label for="number-input">Saisie Numérique :</label>
+                <input type="number" id="number-input" name="number_field" placeholder="Entrez un nombre ici" min="0" step="1">
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
