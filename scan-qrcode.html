@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner QR Code Ultra-Simple</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        #reader {
+            width: 500px;
+            max-width: 90%;
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #e7f3ff;
+            color: #0c5460;
+            font-weight: bold;
+            word-break: break-all;
+            display: none; /* Caché par défaut */
+        }
+        h1 { color: #333; }
+    </style>
+</head>
+<body>
+
+    <h1>Scanner QR Code</h1>
+    
+    <div id="reader"></div>
+    
+    <div id="result"></div>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            // Affiche le résultat dans la zone prévue
+            const resultElement = document.getElementById('result');
+            resultElement.style.display = 'block';
+            resultElement.innerText = `Résultat : ${decodedText}`;
+            
+            // Optionnel : Arrêter le scan après une détection réussie
+            // html5QrcodeScanner.clear();
+        }
+
+        function onScanFailure(error) {
+            // On ignore les erreurs de scan continu (quand aucun QR code n'est dans le champ)
+        }
+
+        // Initialisation du scanner
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", 
+            { 
+                fps: 10,       // Images par seconde
+                qrbox: { width: 250, height: 250 } // Zone de scan
+            }, 
+            /* verbose= */ false
+        );
+
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
+</body>
+</html>
