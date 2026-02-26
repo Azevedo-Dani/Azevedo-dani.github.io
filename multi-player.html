@@ -23,10 +23,10 @@
 </head>
 <body>
 <div class="grid">
-	<video id="player1" autoplay muted loop></video>
-	<video id="player2" autoplay muted loop></video>
-	<video id="player3" autoplay muted loop></video>
-	<video id="player4" autoplay muted loop></video>
+	<img id="player1" />
+	<img id="player2" />
+	<img id="player3" />
+	<img id="player4" />
 </div>
 <script>
 	const sources = [
@@ -36,8 +36,8 @@
 		'https://filesamples.com/samples/video/mjpeg/sample_2560x1440.mjpeg',
 	];
 
-	document.querySelectorAll('video').forEach((video, i) => {
-		video.src = sources[i];
+	document.querySelectorAll('img').forEach((img, i) => {
+		img.src = sources[i];
 	});
 </script>
 </body>
