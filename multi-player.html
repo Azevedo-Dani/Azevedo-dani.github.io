@@ -29,17 +29,14 @@
 	<video id="player4" autoplay muted loop></video>
 </div>
 <script>
-	
-	// MP4 fallback for browsers without HLS support
 	const sources = [
 		'https://filesamples.com/samples/video/mjpeg/sample_640x360.mjpeg',
-    'https://filesamples.com/samples/video/mjpeg/sample_1280x720_surfing_with_audio.mjpeg',
-    'https://filesamples.com/samples/video/mjpeg/sample_960x400_ocean_with_audio.mjpeg',
-    'https://filesamples.com/samples/video/mjpeg/sample_2560x1440.mjpeg'
-  ];
+		'https://filesamples.com/samples/video/mjpeg/sample_1280x720_surfing_with_audio.mjpeg',
+		'https://filesamples.com/samples/video/mjpeg/sample_960x400_ocean_with_audio.mjpeg',
+		'https://filesamples.com/samples/video/mjpeg/sample_2560x1440.mjpeg',
+	];
 
 	document.querySelectorAll('video').forEach((video, i) => {
-		// Use MP4 directly (universal support)
 		video.src = sources[i];
 	});
 </script>
