@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Check Time</title>
+</head>
+<body>
+<script>
+    const now = new Date();
+    const url = `https://screenservices.flowr.cloud/api/backend/device/clocksy/1674106201560?date=${encodeURIComponent(now.toISOString())}`;
+
+    fetch(url)
+        .then(response => {
+            console.log('Status:', response.status);
+            return response.text();
+        })
+        .then(data => {
+            console.log('Response:', data);
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+        });
+</script>
+</body>
+</html>
