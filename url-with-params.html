@@ -1,0 +1,13 @@
+<!-- echo.html sur ton serveur -->
+<!DOCTYPE html>
+<html>
+<body>
+<pre id="out"></pre>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const obj = {};
+  for (const [k, v] of params) obj[k] = v;
+  document.getElementById('out').textContent = JSON.stringify(obj, null, 2);
+</script>
+</body>
+</html>
