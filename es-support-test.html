@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>ECMAScript support test</title>
+		<style>
+			/* Deliberately old-school CSS: no flexbox, no grid, no custom properties,
+			   so the report still renders on the engines being tested. */
+			body {
+				margin: 0;
+				padding: 24px;
+				background: #0b0e13;
+				color: #e6e9ef;
+				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+				font-size: 17px;
+				line-height: 1.45;
+			}
+			h1 {
+				margin: 0 0 4px 0;
+				font-size: 22px;
+				font-weight: normal;
+				color: #8b94a7;
+			}
+			#verdict {
+				font-size: 64px;
+				line-height: 1.1;
+				font-weight: bold;
+				color: #4ade80;
+				margin: 8px 0;
+			}
+			#verdict.bad {
+				color: #f87171;
+			}
+			#summary {
+				font-size: 19px;
+				color: #cbd3e1;
+				margin-bottom: 4px;
+			}
+			.box {
+				border: 1px solid #222836;
+				background: #11151d;
+				padding: 14px 18px;
+				margin: 18px 0;
+			}
+			.box h2 {
+				margin: 0 0 10px 0;
+				font-size: 15px;
+				font-weight: normal;
+				text-transform: uppercase;
+				letter-spacing: 1px;
+				color: #6b7688;
+			}
+			table {
+				border-collapse: collapse;
+				width: 100%;
+			}
+			td {
+				padding: 4px 10px 4px 0;
+				vertical-align: middle;
+			}
+			.ed {
+				font-weight: bold;
+				white-space: nowrap;
+				width: 1px;
+			}
+			.cnt {
+				color: #8b94a7;
+				white-space: nowrap;
+				width: 1px;
+				text-align: right;
+				font-size: 15px;
+			}
+			.bar {
+				background: #1c2230;
+				height: 14px;
+				width: 100%;
+				min-width: 120px;
+			}
+			.bar div {
+				height: 14px;
+			}
+			.full div {
+				background: #4ade80;
+			}
+			.part div {
+				background: #fbbf24;
+			}
+			.none div {
+				background: #f87171;
+			}
+			.ok {
+				color: #4ade80;
+			}
+			.ko {
+				color: #f87171;
+			}
+			.na {
+				color: #8b94a7;
+			}
+			.probe {
+				font-size: 15px;
+				padding: 1px 0;
+			}
+			.probe .mark {
+				display: inline-block;
+				width: 22px;
+			}
+			.grp {
+				display: inline-block;
+				vertical-align: top;
+				width: 32%;
+				min-width: 260px;
+				margin: 0 1% 16px 0;
+			}
+			.grp h3 {
+				margin: 0 0 4px 0;
+				font-size: 16px;
+				border-bottom: 1px solid #222836;
+				padding-bottom: 3px;
+			}
+			.ua {
+				font-family: "Courier New", monospace;
+				font-size: 14px;
+				color: #8b94a7;
+				word-wrap: break-word;
+				word-break: break-all;
+			}
+			.warn {
+				background: #3b2a08;
+				border-color: #7c5c10;
+				color: #fcd34d;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>ECMAScript support test</h1>
+		<div id="verdict">testing…</div>
+		<div id="summary"></div>
+		<div id="out"></div>
+
+		<script>
+			/* ------------------------------------------------------------------
+			   IMPORTANT: everything below must stay ES5 (ES3-friendly where cheap).
+			   Modern syntax is only ever passed as a STRING to new Function(), so a
+			   SyntaxError becomes a failed probe instead of killing the page.
+			   ------------------------------------------------------------------ */
+			(function () {
+				var EDITIONS = [
+					'ES5',
+					'ES2015',
+					'ES2016',
+					'ES2017',
+					'ES2018',
+					'ES2019',
+					'ES2020',
+					'ES2021',
+					'ES2022',
+					'ES2023',
+					'ES2024',
+					'ES2025'
+				]
+
+				/* [edition, label, source]. Source must return exactly true when supported. */
+				var PROBES = [
+					['ES5', 'strict mode', '"use strict"; try { undeclaredGlobalX = 1; return false } catch (e) { return true }'],
+					['ES5', 'Object.keys / defineProperty / create', 'return typeof Object.keys === "function" && typeof Object.defineProperty === "function" && typeof Object.create === "function"'],
+					['ES5', 'array iteration methods', 'return [1, 2].map(function (x) { return x }).length === 2 && typeof [].reduce === "function" && typeof [].filter === "function" && typeof [].indexOf === "function"'],
+					['ES5', 'Function.prototype.bind', 'return typeof (function () {}).bind === "function"'],
+					['ES5', 'JSON', 'return typeof JSON === "object" && JSON.parse(JSON.stringify({ a: 1 })).a === 1'],
+					['ES5', 'accessors in object literals', 'var o = { get x() { return 1 } }; return o.x === 1'],
+					['ES5', 'Array.isArray / String.trim / Date.now', 'return Array.isArray([]) && "  a ".trim() === "a" && typeof Date.now === "function"'],
+					['ES5', 'reserved words as property names', 'var o = { class: 1, if: 2 }; return o.class === 1'],
+
+					['ES2015', 'arrow functions', 'return (() => 42)() === 42'],
+					['ES2015', 'let / const', 'let a = 1; const b = 2; return a + b === 3'],
+					['ES2015', 'template literals', 'var a = 1; return `v${a}` === "v1"'],
+					['ES2015', 'tagged templates', 'function t(s, v) { return s[0] + v } return t`x${1}` === "x1"'],
+					['ES2015', 'classes / extends / super', 'class A { constructor() { this.v = 1 } } class B extends A { constructor() { super(); this.v++ } } return new B().v === 2'],
+					['ES2015', 'default + rest parameters', 'function f(a = 1) { return a } function g() { return arguments.length } function h(...r) { return r.length } return f() === 1 && h(1, 2) === 2 && g() === 0'],
+					['ES2015', 'spread in calls / arrays', 'return Math.max(...[1, 3, 2]) === 3 && [...[1, 2]].length === 2'],
+					['ES2015', 'destructuring', 'var [a, b] = [1, 2]; var { c } = { c: 3 }; return a + b + c === 6'],
+					['ES2015', 'for...of', 'var n = 0; for (var v of [1, 2, 3]) { n += v } return n === 6'],
+					['ES2015', 'generators', 'function* g() { yield 1; yield 2 } var it = g(); return it.next().value === 1 && it.next().value === 2'],
+					['ES2015', 'computed + shorthand properties', 'var k = "a", b = 2; var o = { [k]: 1, b: b }; return o.a === 1 && o.b === 2'],
+					['ES2015', 'Symbol + Symbol.iterator', 'var o = {}; o[Symbol.iterator] = function () { var d = false; return { next: function () { d = !d; return { value: 1, done: !d } } } }; return [...o].length === 1'],
+					['ES2015', 'Map / Set', 'return new Map([[1, "a"]]).get(1) === "a" && new Set([1, 1, 2]).size === 2'],
+					['ES2015', 'WeakMap / WeakSet', 'return typeof WeakMap === "function" && typeof WeakSet === "function"'],
+					['ES2015', 'Promise', 'return typeof Promise === "function" && typeof Promise.resolve().then === "function"'],
+					['ES2015', 'Proxy / Reflect', 'return typeof Proxy === "function" && typeof Reflect === "object" && Reflect.has({ a: 1 }, "a")'],
+					['ES2015', 'Object.assign / is / setPrototypeOf', 'return Object.assign({}, { a: 1 }).a === 1 && Object.is(NaN, NaN) && typeof Object.setPrototypeOf === "function"'],
+					['ES2015', 'Array.from / of / find / fill', 'return Array.from("ab").length === 2 && Array.of(1).length === 1 && [1, 2].find(function (x) { return x === 2 }) === 2 && [0, 0].fill(1)[0] === 1'],
+					['ES2015', 'String includes / startsWith / repeat', 'return "ab".includes("a") && "ab".startsWith("a") && "ab".endsWith("b") && "a".repeat(2) === "aa"'],
+					['ES2015', 'Number / Math additions', 'return Number.isInteger(1) && Number.isNaN(NaN) && Math.trunc(1.5) === 1 && Math.sign(-2) === -1'],
+					['ES2015', 'typed arrays / ArrayBuffer / DataView', 'return new Uint8Array(2).length === 2 && typeof ArrayBuffer === "function" && typeof DataView === "function"'],
+					['ES2015', 'unicode code point escapes', 'return "\\u{1f600}".length === 2'],
+					['ES2015', 'regexp u and y flags', 'return new RegExp("a", "u").unicode === true && new RegExp("a", "y").sticky === true'],
+					['ES2015', 'new.target', 'function F() { this.ok = new.target !== undefined } return new F().ok === true'],
+					['ES2015', 'subclassing built-ins', 'class L extends Array {} var l = new L(); l.push(1); return l.length === 1 && l instanceof Array'],
+
+					['ES2016', 'exponentiation operator', 'return 2 ** 3 === 8'],
+					['ES2016', 'exponentiation assignment', 'var a = 2; a **= 3; return a === 8'],
+					['ES2016', 'Array.prototype.includes', 'return [1, 2].includes(2)'],
+
+					['ES2017', 'async functions', 'return (async function () { return 1 })() instanceof Promise'],
+					['ES2017', 'await', 'return typeof (async function () { return await 1 }) === "function"'],
+					['ES2017', 'Object.values / entries', 'return Object.values({ a: 1 })[0] === 1 && Object.entries({ a: 1 })[0][1] === 1'],
+					['ES2017', 'Object.getOwnPropertyDescriptors', 'return typeof Object.getOwnPropertyDescriptors === "function"'],
+					['ES2017', 'String padStart / padEnd', 'return "1".padStart(2, "0") === "01" && "1".padEnd(2, "0") === "10"'],
+					['ES2017', 'trailing commas in parameter lists', 'function f(a, b,) { return a + b } return f(1, 2,) === 3'],
+
+					['ES2018', 'object rest / spread', 'var o = { ...{ a: 1 }, b: 2 }; var { a, ...r } = o; return a === 1 && r.b === 2'],
+					['ES2018', 'async generators', 'return typeof (async function* () { yield 1 }) === "function"'],
+					['ES2018', 'for await...of', 'return typeof (async function () { for await (var v of []) { v } }) === "function"'],
+					['ES2018', 'Promise.prototype.finally', 'return typeof Promise.prototype.finally === "function"'],
+					['ES2018', 'regexp named capture groups', 'return "ab".match(/(?<x>a)/).groups.x === "a"'],
+					['ES2018', 'regexp lookbehind', 'return /(?<=a)b/.test("ab")'],
+					['ES2018', 'regexp dotAll flag', 'return new RegExp("a.b", "s").test("a\\nb")'],
+					['ES2018', 'regexp unicode property escapes', 'return new RegExp("\\\\p{L}", "u").test("a")'],
+
+					['ES2019', 'optional catch binding', 'try { throw 1 } catch { return true } return false'],
+					['ES2019', 'Array flat / flatMap', 'return [[1], [2]].flat().length === 2 && [1].flatMap(function (x) { return [x, x] }).length === 2'],
+					['ES2019', 'Object.fromEntries', 'return Object.fromEntries([["a", 1]]).a === 1'],
+					['ES2019', 'String trimStart / trimEnd', 'return " a".trimStart() === "a" && "a ".trimEnd() === "a"'],
+					['ES2019', 'Symbol.prototype.description', 'return Symbol("x").description === "x"'],
+					['ES2019', 'well-formed JSON.stringify', 'return JSON.stringify("\\ud800").length === 8'],
+
+					['ES2020', 'optional chaining', 'var o = { a: { b: 1 } }; return o?.a?.b === 1 && o?.x?.y === undefined'],
+					['ES2020', 'nullish coalescing', 'return (null ?? 1) === 1 && (0 ?? 2) === 0'],
+					['ES2020', 'BigInt + literals', 'return typeof 1n === "bigint" && 2n ** 3n === 8n'],
+					['ES2020', 'dynamic import() syntax', 'return typeof function () { return import("./nope.js") } === "function"'],
+					['ES2020', 'globalThis', 'return typeof globalThis === "object"'],
+					['ES2020', 'String.prototype.matchAll', 'return [..."aa".matchAll(/a/g)].length === 2'],
+					['ES2020', 'Promise.allSettled', 'return typeof Promise.allSettled === "function"'],
+
+					['ES2021', 'logical assignment operators', 'var a = null; a ??= 1; var b = 0; b ||= 2; var c = 1; c &&= 3; return a === 1 && b === 2 && c === 3'],
+					['ES2021', 'numeric separators', 'return 1_000 === 1000'],
+					['ES2021', 'String.prototype.replaceAll', 'return "aa".replaceAll("a", "b") === "bb"'],
+					['ES2021', 'Promise.any', 'return typeof Promise.any === "function"'],
+					['ES2021', 'WeakRef / FinalizationRegistry', 'return typeof WeakRef === "function" && typeof FinalizationRegistry === "function"'],
+
+					['ES2022', 'class fields', 'class A { x = 1 } return new A().x === 1'],
+					['ES2022', 'private fields and methods', 'class A { #x = 1; #m() { return this.#x } get v() { return this.#m() } } return new A().v === 1'],
+					['ES2022', 'class static blocks', 'class A { static x; static { A.x = 1 } } return A.x === 1'],
+					['ES2022', 'brand checks (#x in obj)', 'class A { #x = 1; static has(o) { return #x in o } } return A.has(new A()) === true && A.has({}) === false'],
+					['ES2022', 'Array / String .at()', 'return [1, 2].at(-1) === 2 && "ab".at(-1) === "b"'],
+					['ES2022', 'Object.hasOwn', 'return Object.hasOwn({ a: 1 }, "a")'],
+					['ES2022', 'Error cause', 'return new Error("x", { cause: 1 }).cause === 1'],
+					['ES2022', 'regexp d (hasIndices) flag', 'return new RegExp("a", "d").hasIndices === true'],
+
+					['ES2023', 'Array findLast / findLastIndex', 'return [1, 2].findLast(function (x) { return x < 3 }) === 2 && [1, 2].findLastIndex(function (x) { return x < 3 }) === 1'],
+					['ES2023', 'change array by copy', 'return [2, 1].toSorted()[0] === 1 && [1, 2].toReversed()[0] === 2 && [1, 2].with(0, 3)[0] === 3 && typeof [].toSpliced === "function"'],
+					['ES2023', 'symbols as WeakMap keys', 'var s = Symbol("k"); var m = new WeakMap(); m.set(s, 1); return m.get(s) === 1'],
+
+					['ES2024', 'Object.groupBy / Map.groupBy', 'return typeof Object.groupBy === "function" && typeof Map.groupBy === "function" && Object.groupBy([1, 2], function (x) { return x % 2 })[1].length === 1'],
+					['ES2024', 'Promise.withResolvers', 'return typeof Promise.withResolvers === "function" && typeof Promise.withResolvers().resolve === "function"'],
+					['ES2024', 'String isWellFormed / toWellFormed', 'return "a".isWellFormed() === true && typeof "a".toWellFormed === "function"'],
+					['ES2024', 'regexp v flag', 'return new RegExp("[\\\\p{L}]", "v").test("a")'],
+					['ES2024', 'ArrayBuffer.prototype.transfer', 'return typeof ArrayBuffer.prototype.transfer === "function"'],
+
+					['ES2025', 'Set methods (union, intersection…)', 'var a = new Set([1, 2]); return typeof a.union === "function" && a.union(new Set([3])).size === 3 && a.intersection(new Set([2])).size === 1'],
+					['ES2025', 'iterator helpers', 'return typeof Iterator === "function" && [1, 2].values().map(function (x) { return x * 2 }).toArray()[1] === 4'],
+					['ES2025', 'Promise.try', 'return typeof Promise.try === "function"'],
+					['ES2025', 'RegExp.escape', 'return typeof RegExp.escape === "function" && RegExp.escape("a.b").indexOf("\\\\.") > -1'],
+					['ES2025', 'duplicate named capture groups', 'return new RegExp("(?<a>x)|(?<a>y)").test("y")'],
+					['ES2025', 'Float16Array / Math.f16round', 'return typeof Float16Array === "function" && typeof Math.f16round === "function"']
+				]
+
+				var canUseFunction = true
+				try {
+					if (new Function('return true')() !== true) {
+						canUseFunction = false
+					}
+				} catch (e) {
+					canUseFunction = false
+				}
+
+				function runProbe(src) {
+					try {
+						return new Function(src)() === true
+					} catch (e) {
+						return false
+					}
+				}
+
+				function esc(s) {
+					return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+				}
+
+				/* ---- run the syntax/API probes ---- */
+				var results = []
+				var i, j
+				for (i = 0; i < PROBES.length; i++) {
+					results.push({ es: PROBES[i][0], name: PROBES[i][1], pass: canUseFunction ? runProbe(PROBES[i][2]) : false })
+				}
+
+				function statsFor(edition) {
+					var pass = 0,
+						total = 0
+					for (j = 0; j < results.length; j++) {
+						if (results[j].es === edition) {
+							total++
+							if (results[j].pass) {
+								pass++
+							}
+						}
+					}
+					return { pass: pass, total: total }
+				}
+
+				/* Highest edition where this one and every earlier one pass completely. */
+				function computeVerdict() {
+					var best = null
+					for (i = 0; i < EDITIONS.length; i++) {
+						var s = statsFor(EDITIONS[i])
+						if (s.total > 0 && s.pass === s.total) {
+							best = EDITIONS[i]
+						} else {
+							break
+						}
+					}
+					return best
+				}
+
+				/* ---- module / delivery probes (how the bundle would actually load) ---- */
+				var moduleRows = [
+					{ name: '<script type="module"> recognised', state: 'pending' },
+					{ name: 'module script actually executes', state: 'pending' },
+					{ name: 'import.meta', state: 'pending' },
+					{ name: 'dynamic import() at runtime', state: 'pending' },
+					{ name: 'top-level await (ES2022)', state: 'pending' }
+				]
+
+				moduleRows[0].state = typeof HTMLScriptElement === 'function' && 'noModule' in HTMLScriptElement.prototype ? 'yes' : 'no'
+
+				function injectModule(source) {
+					try {
+						var blob = new Blob([source], { type: 'text/javascript' })
+						var url = URL.createObjectURL(blob)
+						var s = document.createElement('script')
+						s.type = 'module'
+						s.src = url
+						;(document.getElementsByTagName('head')[0] || document.body).appendChild(s)
+						return true
+					} catch (e) {
+						return false
+					}
+				}
+
+				var MOD_SRC =
+					'window.__ES_MOD__ = { exec: true, importMeta: typeof import.meta === "object" };' +
+					'try {' +
+					'  var p = import("data:text/javascript,export default 1");' +
+					'  window.__ES_MOD__.dynImport = !!p && typeof p.then === "function";' +
+					'  p.then(function (m) { window.__ES_MOD__.dynImportOk = m["default"] === 1 }, function () { window.__ES_MOD__.dynImportOk = false })' +
+					'} catch (e) { window.__ES_MOD__.dynImport = false }'
+
+				var TLA_SRC = 'await Promise.resolve(); window.__ES_TLA__ = true'
+
+				var injected = injectModule(MOD_SRC) && injectModule(TLA_SRC)
+
+				function resolveModuleRows() {
+					if (!injected) {
+						for (i = 1; i < moduleRows.length; i++) {
+							moduleRows[i].state = 'n/a'
+						}
+						return
+					}
+					var m = window.__ES_MOD__ || {}
+					moduleRows[1].state = m.exec ? 'yes' : 'no'
+					moduleRows[2].state = m.exec ? (m.importMeta ? 'yes' : 'no') : 'n/a'
+					moduleRows[3].state = m.exec ? (m.dynImportOk === true ? 'yes' : m.dynImport ? 'partial' : 'no') : 'n/a'
+					moduleRows[4].state = window.__ES_TLA__ === true ? 'yes' : moduleRows[1].state === 'yes' ? 'no' : 'n/a'
+				}
+
+				/* ---- rendering ---- */
+				function engineInfo() {
+					var ua = navigator.userAgent || ''
+					var bits = []
+					var patterns = [
+						['Chrome', /Chrom(?:e|ium)\/([\d.]+)/],
+						['AppleWebKit', /AppleWebKit\/([\d.]+)/],
+						['Firefox', /Firefox\/([\d.]+)/],
+						['Safari version', /Version\/([\d.]+).*Safari/],
+						['Tizen', /Tizen[ \/]([\d.]+)/],
+						['webOS', /(?:Web0S|WebOS|webOS)[ \/;]*([\d.]*)/],
+						['BrightSign', /BrightSign\/?([\d.]*)/],
+						['Edge', /Edge?\/([\d.]+)/]
+					]
+					for (i = 0; i < patterns.length; i++) {
+						var mm = ua.match(patterns[i][1])
+						if (mm) {
+							bits.push(patterns[i][0] + ' ' + (mm[1] || '?'))
+						}
+					}
+					return bits.length ? bits.join(' · ') : 'unknown engine'
+				}
+
+				function barClass(s) {
+					if (s.pass === s.total) {
+						return 'full'
+					}
+					return s.pass === 0 ? 'none' : 'part'
+				}
+
+				function render() {
+					var verdict = computeVerdict()
+					var html = ''
+					var s
+
+					if (!canUseFunction) {
+						html +=
+							'<div class="box warn"><h2>warning</h2>The Function constructor is unavailable or blocked ' +
+							'(strict CSP?). Syntax probes cannot run, so every result below reads as unsupported. ' +
+							'Serve this file from a page without a <code>script-src</code> restriction.</div>'
+					}
+
+					/* per-edition table */
+					html += '<div class="box"><h2>Support by edition</h2><table>'
+					for (i = 0; i < EDITIONS.length; i++) {
+						s = statsFor(EDITIONS[i])
+						var pct = s.total ? Math.round((s.pass / s.total) * 100) : 0
+						html +=
+							'<tr><td class="ed">' +
+							EDITIONS[i] +
+							'</td><td><div class="bar ' +
+							barClass(s) +
+							'"><div style="width:' +
+							pct +
+							'%"></div></div></td><td class="cnt">' +
+							s.pass +
+							'/' +
+							s.total +
+							' &nbsp;' +
+							pct +
+							'%</td></tr>'
+					}
+					html += '</table></div>'
+
+					/* modules */
+					html += '<div class="box"><h2>Modules &amp; delivery</h2><table>'
+					for (i = 0; i < moduleRows.length; i++) {
+						var st = moduleRows[i].state
+						var cls = st === 'yes' ? 'ok' : st === 'no' ? 'ko' : 'na'
+						html += '<tr><td class="' + cls + '" style="width:1px">' + (st === 'yes' ? '✓' : st === 'no' ? '✗' : '–') + '</td><td>' + moduleRows[i].name.replace(/</g, '&lt;') + '</td><td class="cnt">' + st + '</td></tr>'
+					}
+					html += '</table></div>'
+
+					/* failures first — the actionable part */
+					var failed = []
+					for (i = 0; i < results.length; i++) {
+						if (!results[i].pass) {
+							failed.push(results[i])
+						}
+					}
+					if (failed.length) {
+						html += '<div class="box"><h2>Unsupported features (' + failed.length + ')</h2>'
+						for (i = 0; i < failed.length; i++) {
+							html += '<div class="probe"><span class="mark ko">✗</span><b>' + failed[i].es + '</b> &mdash; ' + esc(failed[i].name) + '</div>'
+						}
+						html += '</div>'
+					} else {
+						html += '<div class="box"><h2>Unsupported features</h2>None &mdash; every probe passed.</div>'
+					}
+
+					/* full detail */
+					html += '<div class="box"><h2>All probes</h2>'
+					for (i = 0; i < EDITIONS.length; i++) {
+						s = statsFor(EDITIONS[i])
+						if (!s.total) {
+							continue
+						}
+						html += '<div class="grp"><h3>' + EDITIONS[i] + ' <span class="cnt">' + s.pass + '/' + s.total + '</span></h3>'
+						for (j = 0; j < results.length; j++) {
+							if (results[j].es === EDITIONS[i]) {
+								html +=
+									'<div class="probe"><span class="mark ' +
+									(results[j].pass ? 'ok">✓' : 'ko">✗') +
+									'</span>' +
+									esc(results[j].name) +
+									'</div>'
+							}
+						}
+						html += '</div>'
+					}
+					html += '</div>'
+
+					/* engine */
+					html +=
+						'<div class="box"><h2>Engine</h2><div>' +
+						esc(engineInfo()) +
+						'</div><div>screen ' +
+						(screen.width || '?') +
+						'&times;' +
+						(screen.height || '?') +
+						' · window ' +
+						(window.innerWidth || document.documentElement.clientWidth || '?') +
+						'&times;' +
+						(window.innerHeight || document.documentElement.clientHeight || '?') +
+						' · devicePixelRatio ' +
+						(window.devicePixelRatio || 1) +
+						'</div><div class="ua">' +
+						esc(navigator.userAgent) +
+						'</div></div>'
+
+					document.getElementById('out').innerHTML = html
+
+					var vEl = document.getElementById('verdict')
+					vEl.innerHTML = verdict ? verdict : 'below ES5'
+					vEl.className = verdict && verdict !== 'ES5' ? '' : 'bad'
+
+					/* one compact line, easy to read off a TV or photograph */
+					var line = []
+					for (i = 0; i < EDITIONS.length; i++) {
+						s = statsFor(EDITIONS[i])
+						if (s.total) {
+							line.push(EDITIONS[i].replace('ES20', "'") + ':' + s.pass + '/' + s.total)
+						}
+					}
+					document.getElementById('summary').innerHTML =
+						'fully supported up to <b>' +
+						(verdict || 'nothing') +
+						'</b> &nbsp;|&nbsp; ES modules: <b>' +
+						moduleRows[1].state +
+						'</b><br><span class="ua">' +
+						line.join('  ') +
+						'</span>'
+
+					/* machine-readable, for Playwright / the frontend test agent */
+					var report = { verdict: verdict, editions: {}, modules: {}, probes: {}, userAgent: navigator.userAgent }
+					for (i = 0; i < EDITIONS.length; i++) {
+						s = statsFor(EDITIONS[i])
+						if (s.total) {
+							report.editions[EDITIONS[i]] = s.pass + '/' + s.total
+						}
+					}
+					for (i = 0; i < moduleRows.length; i++) {
+						report.modules[moduleRows[i].name] = moduleRows[i].state
+					}
+					for (i = 0; i < results.length; i++) {
+						report.probes[results[i].es + ' / ' + results[i].name] = results[i].pass
+					}
+					window.__ES_REPORT__ = report
+					if (window.console && console.log) {
+						console.log(typeof JSON === 'object' ? JSON.stringify(report, null, 2) : report)
+					}
+				}
+
+				render()
+
+				/* module probes are async: re-render once they have had time to settle */
+				setTimeout(function () {
+					resolveModuleRows()
+					render()
+				}, 1500)
+			})()
+		</script>
+	</body>
+</html>
