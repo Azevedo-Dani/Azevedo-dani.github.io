@@ -53,6 +53,16 @@
             border-radius: 5px;
             overflow-x: auto;
         }
+        .highlight {
+            background-color: #fff8e1;
+            border-left: 5px solid #ffb300;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+        }
+        .unavailable {
+            color: #999;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -69,6 +79,16 @@
     document.addEventListener('DOMContentLoaded', function() {
         var resultElement = document.getElementById('result');
         var statusElement = document.getElementById('status');
+
+        // Renseigné en asynchrone par les API TV : le navigateur ne connaît que son
+        // propre plan graphique, jamais la résolution réelle de la dalle.
+        var panel = {
+            source: null,
+            resolution: null,
+            model: null,
+            firmware: null,
+            error: null
+        };
 
         // Fonction pour détecter le navigateur et sa version
         function getBrowserInfo() {
@@ -107,6 +127,119 @@
             return 8 * (Math.max(viewportWidth, viewportHeight) / 1920);
         }
 
+        function parseResolution(text) {
+            var match = /(\d+)\s*[xX*]\s*(\d+)/.exec(String(text || ''));
+            return match ? { width: parseInt(match[1], 10), height: parseInt(match[2], 10) } : null;
+        }
+
+        // Rapport entre la dalle et le plan graphique : c'est ce facteur que le
+        // scaler de la TV applique, et donc ce qui rend l'interface molle.
+        function getUpscaleFactor() {
+            var dalle = parseResolution(panel.resolution);
+            if (!dalle || !window.innerWidth) {
+                return null;
+            }
+            return (dalle.width / window.innerWidth).toFixed(2);
+        }
+
+        function readHcapProperty(key, done) {
+            try {
+                hcap.property.getProperty({
+                    key: key,
+                    onSuccess: function(success) { done(success.value); },
+                    onFailure: function(error) { done(null, error && error.errorMessage); }
+                });
+            } catch (e) {
+                done(null, e && e.message);
+            }
+        }
+
+        // LG hospitality : hcap est injecté par le conteneur Pro:Centric.
+        function readPanelFromHcap(done) {
+            var pending = 3;
+            var settle = function() {
+                pending -= 1;
+                if (pending === 0) { done(); }
+            };
+
+            panel.source = 'HCAP (LG hospitality)';
+            readHcapProperty('display_resolution', function(value, error) {
+                panel.resolution = value;
+                if (error) { panel.error = error; }
+                settle();
+            });
+            readHcapProperty('model_name', function(value) { panel.model = value; settle(); });
+            readHcapProperty('platform_version', function(value) { panel.firmware = value; settle(); });
+        }
+
+        // webOS TV / signage : screenWidth et screenHeight de deviceInfo décrivent la dalle.
+        function readPanelFromWebos(done) {
+            panel.source = 'webOSTV deviceInfo';
+            try {
+                window.webOS.deviceInfo(function(device) {
+                    if (device && device.screenWidth) {
+                        panel.resolution = device.screenWidth + ' x ' + device.screenHeight;
+                    }
+                    panel.model = device && device.modelName;
+                    panel.firmware = device && device.version;
+                    done();
+                });
+            } catch (e) {
+                panel.error = e && e.message;
+                done();
+            }
+        }
+
+        function readPanel(done) {
+            var finished = false;
+            var finish = function() {
+                if (!finished) { finished = true; done(); }
+            };
+
+            // Une API TV qui ne rappelle jamais laisserait la page bloquée sur "Récupération...".
+            setTimeout(finish, 3000);
+
+            if (typeof hcap !== 'undefined' && hcap.property && hcap.property.getProperty) {
+                readPanelFromHcap(finish);
+            } else if (window.webOS && window.webOS.deviceInfo) {
+                readPanelFromWebos(finish);
+            } else {
+                finish();
+            }
+        }
+
+        function renderPanelSection() {
+            if (!panel.source) {
+                return '<h2>Résolution de l\'écran (dalle) :</h2>' +
+                    '<p class="unavailable">Aucune API TV détectée (ni hcap, ni webOSTV) — page ouverte hors du conteneur TV. ' +
+                    'Seul le plan graphique ci-dessous est mesurable.</p>';
+            }
+
+            var upscale = getUpscaleFactor();
+            var html = '<h2>Résolution de l\'écran (dalle) :</h2>';
+
+            if (panel.resolution) {
+                html += '<p class="highlight"><strong>Résolution de l\'écran :</strong> ' + panel.resolution +
+                    '&nbsp;&nbsp;<small>(source : ' + panel.source + ')</small></p>';
+            } else {
+                html += '<p class="unavailable">Résolution non retournée par ' + panel.source +
+                    (panel.error ? ' — ' + panel.error : '') + '</p>';
+            }
+
+            if (upscale) {
+                html += '<p><strong>Facteur d\'upscale appliqué par la TV :</strong> x' + upscale +
+                    ' (dalle ÷ plan graphique de l\'app)</p>';
+            }
+            if (panel.model) {
+                html += '<p><strong>Modèle :</strong> ' + panel.model + '</p>';
+            }
+            if (panel.firmware) {
+                html += '<p><strong>Firmware :</strong> ' + panel.firmware + '</p>';
+            }
+
+            return html;
+        }
+
         function refresh() {
             var browserInfo = getBrowserInfo();
             var platform = navigator.platform || 'Non spécifié';
@@ -117,8 +250,9 @@
             statusElement.textContent = 'Informations récupérées.';
 
             resultElement.innerHTML =
-                '<h2>Écran :</h2>' +
-                '<p><strong>Résolution de l\'écran :</strong> ' + screenInfo.screen + '</p>' +
+                renderPanelSection() +
+                '<h2>Plan graphique de l\'app (navigateur) :</h2>' +
+                '<p><strong>screen :</strong> ' + screenInfo.screen + '</p>' +
                 '<p><strong>Zone disponible :</strong> ' + screenInfo.available + '</p>' +
                 '<p><strong>Fenêtre (viewport CSS) :</strong> ' + screenInfo.viewport + '</p>' +
                 '<p><strong>Device pixel ratio :</strong> ' + screenInfo.pixelRatio + '</p>' +
@@ -134,6 +268,7 @@
         }
 
         refresh();
+        readPanel(refresh);
         window.addEventListener('resize', refresh);
     });
 </script>
