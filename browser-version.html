@@ -87,20 +87,54 @@
             if((tem=ua.match(/version\/(\d+(\.\d+)?)/i))!=null) M.splice(1, 1, tem[1]);
             return M.join(' ');
         }
-        
-        // Exécuter la détection et afficher les résultats
-        var browserInfo = getBrowserInfo();
-        var platform = navigator.platform || 'Non spécifié';
-        var userAgentString = navigator.userAgent || 'Non spécifié';
 
-        statusElement.textContent = 'Informations récupérées.';
+        // Résolution physique de l'écran, taille utile de la fenêtre, et densité
+        function getScreenInfo() {
+            var s = window.screen || {};
+            return {
+                screen: (s.width || '?') + ' x ' + (s.height || '?'),
+                available: (s.availWidth || '?') + ' x ' + (s.availHeight || '?'),
+                viewport: window.innerWidth + ' x ' + window.innerHeight,
+                colorDepth: (s.colorDepth || '?') + ' bits',
+                pixelRatio: window.devicePixelRatio || 1,
+                orientation: (s.orientation && s.orientation.type) || (window.innerWidth >= window.innerHeight ? 'landscape' : 'portrait')
+            };
+        }
 
-        resultElement.innerHTML = 
-            '<h2>Détails du navigateur :</h2>' +
-            '<p><strong>Navigateur et version :</strong> ' + browserInfo + '</p>' +
-            '<p><strong>Système d\'exploitation :</strong> ' + platform + '</p>' +
-            '<h2>Chaîne complète (User-Agent) :</h2>' +
-            '<pre>' + userAgentString + '</pre>';
+        // FlowR fixe la police racine à 8 * (max(largeur, hauteur) / 1920) px :
+        // c'est la valeur qui donne l'équivalence px <-> rem sur cet écran.
+        function getFlowrRemBase(viewportWidth, viewportHeight) {
+            return 8 * (Math.max(viewportWidth, viewportHeight) / 1920);
+        }
+
+        function refresh() {
+            var browserInfo = getBrowserInfo();
+            var platform = navigator.platform || 'Non spécifié';
+            var userAgentString = navigator.userAgent || 'Non spécifié';
+            var screenInfo = getScreenInfo();
+            var remBase = getFlowrRemBase(window.innerWidth, window.innerHeight);
+
+            statusElement.textContent = 'Informations récupérées.';
+
+            resultElement.innerHTML =
+                '<h2>Écran :</h2>' +
+                '<p><strong>Résolution de l\'écran :</strong> ' + screenInfo.screen + '</p>' +
+                '<p><strong>Zone disponible :</strong> ' + screenInfo.available + '</p>' +
+                '<p><strong>Fenêtre (viewport CSS) :</strong> ' + screenInfo.viewport + '</p>' +
+                '<p><strong>Device pixel ratio :</strong> ' + screenInfo.pixelRatio + '</p>' +
+                '<p><strong>Profondeur de couleur :</strong> ' + screenInfo.colorDepth + '</p>' +
+                '<p><strong>Orientation :</strong> ' + screenInfo.orientation + '</p>' +
+                '<h2>Base rem FlowR sur cet écran :</h2>' +
+                '<p><strong>1rem =</strong> ' + remBase.toFixed(2) + 'px &nbsp;&nbsp; (<strong>1px =</strong> ' + (1 / remBase).toFixed(4) + 'rem)</p>' +
+                '<h2>Détails du navigateur :</h2>' +
+                '<p><strong>Navigateur et version :</strong> ' + browserInfo + '</p>' +
+                '<p><strong>Système d\'exploitation :</strong> ' + platform + '</p>' +
+                '<h2>Chaîne complète (User-Agent) :</h2>' +
+                '<pre>' + userAgentString + '</pre>';
+        }
+
+        refresh();
+        window.addEventListener('resize', refresh);
     });
 </script>
 
