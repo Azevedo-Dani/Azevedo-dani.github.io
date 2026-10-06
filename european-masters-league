@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I'm Competing · EML</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=block" rel="stylesheet">
+<style>
+:root{--ink:#101215;--ink-2:#1C1F24;--bone:#F3EEE6;--red:#D2232A;--slate:#68717D}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--bone);font:16px/1.5 'Inter',sans-serif;min-height:100vh}
+.wrap{max-width:1040px;margin:0 auto;padding:32px 16px 64px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:40px;align-items:start}
+@media (max-width:820px){.wrap{grid-template-columns:1fr}.preview{order:-1}}
+h1{font:800 56px/.9 'Barlow Condensed',sans-serif;text-transform:uppercase}
+h1 span{color:var(--red)}
+.kick{font:600 12px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:12px}
+.intro{color:#9AA1AA;margin:14px 0 28px;max-width:46ch}
+.belt{display:flex;height:6px;margin-bottom:28px;max-width:200px}.belt i{flex:1;background:var(--red)}.belt i:nth-child(even){background:#000}
+form{display:grid;gap:18px}
+label{display:grid;gap:6px;font:600 12px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9AA1AA}
+input,select{font:500 17px 'Inter',sans-serif;color:var(--bone);background:#1C1F24;border:1px solid #2B2F35;border-radius:8px;padding:12px 14px;width:100%}
+input:focus,select:focus{outline:2px solid var(--red);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{font:600 13px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--bone);background:transparent;border:1px solid #3A3F46;border-radius:6px;padding:10px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--red);border-color:var(--red)}
+.hint{font:400 13px 'Inter',sans-serif;letter-spacing:0;text-transform:none;color:#7C838C}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.btn{font:600 14px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;border:0;border-radius:8px;padding:16px 22px;cursor:pointer;background:var(--red);color:var(--bone)}
+.btn.ghost{background:transparent;border:1px solid #3A3F46}
+.preview{position:sticky;top:24px}
+canvas{width:100%;aspect-ratio:9/16;border-radius:14px;display:block;box-shadow:0 20px 50px rgba(0,0,0,.5);background:#000}
+.cap{font-size:13px;color:#7C838C;margin-top:12px}
+.photo-row{display:flex;gap:10px;align-items:center}
+.photo-row input[type=file]{padding:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <div class="kick">European Masters League · Brussels 24.04.2027</div>
+    <h1>I'm <span>competing.</span></h1>
+    <div class="intro">Fill in your details, download your story and post it. Tag us and your academy.</div>
+    <div class="belt"><i></i><i></i><i></i><i></i></div>
+    <form id="f" autocomplete="off" onsubmit="return false">
+      <div class="row">
+        <label>First name<input id="first" maxlength="18" placeholder="Marc"></label>
+        <label>Last name<input id="last" maxlength="22" placeholder="Lemaire"></label>
+      </div>
+      <label>Age group
+        <div class="seg" id="age"></div>
+      </label>
+      <label>Discipline
+        <div class="seg" id="disc"></div>
+      </label>
+      <div class="row">
+        <label>Weight class<input id="weight" maxlength="12" placeholder="-82.3 kg"></label>
+        <label>Belt
+          <select id="belt"><option value="">—</option><option>White</option><option>Blue</option><option>Purple</option><option>Brown</option><option>Black</option></select>
+        </label>
+      </div>
+      <label>Academy · City<input id="academy" maxlength="40" placeholder="Northside BJJ · Antwerp"></label>
+      <label>Photo (optional)
+        <div class="photo-row"><input id="photo" type="file" accept="image/*"><button type="button" class="btn ghost" id="nophoto">Remove</button></div>
+        <span class="hint">Chest-up, facing the camera. It's shown in black &amp; white.</span>
+      </label>
+      <div class="actions">
+        <button type="button" class="btn" id="dl">Download story ↓</button>
+        <button type="button" class="btn ghost" id="share" hidden>Share…</button>
+      </div>
+    </form>
+  </div>
+  <div class="preview">
+    <canvas id="c" width="1080" height="1920"></canvas>
+    <div class="cap">1080 × 1920 · Instagram story. Nothing is uploaded: the image is made on your device.</div>
+  </div>
+</div>
+
+<script>
+const C = {ink:'#101215', bone:'#F3EEE6', red:'#D2232A', slate:'#9AA1AA', black:'#000'};
+const W = 1080, H = 1920, M = 64;
+const state = {age:'M1', disc:'Gi', photo:null};
+const $ = id => document.getElementById(id);
+const cv = $('c'), ctx = cv.getContext('2d');
+
+function seg(el, values, key, labels){
+  values.forEach((v, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = labels ? labels[i] : v;
+    b.setAttribute('aria-pressed', state[key] === v);
+    b.onclick = () => { state[key] = v; [...el.children].forEach(x => x.setAttribute('aria-pressed', x === b)); draw(); };
+    el.appendChild(b);
+  });
+}
+seg($('age'), ['M1','M2','M3','M4','M5','M6','M7'], 'age', ['M1 30+','M2 35+','M3 40+','M4 45+','M5 50+','M6 55+','M7 60+']);
+seg($('disc'), ['Gi','No-Gi','Gi + No-Gi'], 'disc');
+
+const font = (w, s, f) => `${w} ${s}px ${f}`;
+const D = "'Barlow Condensed'", MONO = "'JetBrains Mono'", B = "'Inter'";
+
+function spaced(text, x, y, spacing, align){
+  // canvas letterSpacing isn't everywhere yet: draw char by char
+  const chars = [...text];
+  const widths = chars.map(ch => ctx.measureText(ch).width);
+  const total = widths.reduce((a, b) => a + b, 0) + spacing * (chars.length - 1);
+  let cx = align === 'right' ? x - total : x;
+  chars.forEach((ch, i) => { ctx.fillText(ch, cx, y); cx += widths[i] + spacing; });
+  return total;
+}
+
+function fitSize(text, weight, family, max, maxW){
+  let s = max;
+  ctx.font = font(weight, s, family);
+  while (ctx.measureText(text).width > maxW && s > 40) { s -= 4; ctx.font = font(weight, s, family); }
+  return s;
+}
+
+function monogram(x, y, s){
+  ctx.fillStyle = C.bone; roundRect(x, y, s, s, s * .083); ctx.fill();
+  ctx.fillStyle = C.ink; ctx.font = font(900, s * .48, D); ctx.textAlign = 'center';
+  ctx.fillText('EML', x + s / 2, y + s * .62); ctx.textAlign = 'left';
+  const bw = s * .19, bh = s * .075, bx = x + s * .117, by = y + s * .717;
+  for (let i = 0; i < 4; i++) { ctx.fillStyle = i % 2 ? C.ink : C.red; ctx.fillRect(bx + i * bw, by, bw, bh); }
+}
+function roundRect(x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+
+function tag(text, x, y, filled){
+  ctx.font = font(600, 30, MONO);
+  const padX = 22, h = 64;
+  const w = [...text].reduce((a, ch) => a + ctx.measureText(ch).width, 0) + 3 * (text.length - 1) + padX * 2;
+  roundRect(x, y, w, h, 8);
+  if (filled) { ctx.fillStyle = C.red; ctx.fill(); } else { ctx.strokeStyle = C.bone; ctx.lineWidth = 3; ctx.stroke(); }
+  ctx.fillStyle = C.bone; spaced(text, x + padX, y + 43, 3);
+  return w;
+}
+
+function drawPhoto(){
+  const img = state.photo, top = 0, ph = 1180;
+  const r = Math.max(W / img.width, ph / img.height);
+  const w = img.width * r, h = img.height * r;
+  const off = document.createElement('canvas'); off.width = W; off.height = ph;
+  const o = off.getContext('2d');
+  o.drawImage(img, (W - w) / 2, Math.min(0, (ph - h) * .3), w, h);
+  const d = o.getImageData(0, 0, W, ph), p = d.data;
+  for (let i = 0; i < p.length; i += 4) {
+    let g = .299 * p[i] + .587 * p[i + 1] + .114 * p[i + 2];
+    g = Math.max(0, Math.min(255, (g - 128) * 1.18 + 120)); // a bit more contrast, slightly darker
+    p[i] = p[i + 1] = p[i + 2] = g;
+  }
+  o.putImageData(d, 0, 0);
+  ctx.drawImage(off, 0, top);
+  const g = ctx.createLinearGradient(0, ph * .35, 0, ph);
+  g.addColorStop(0, 'rgba(16,18,21,0)'); g.addColorStop(1, C.ink);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, ph);
+  const t = ctx.createLinearGradient(0, 0, 0, 420);
+  t.addColorStop(0, 'rgba(16,18,21,.65)'); t.addColorStop(1, 'rgba(16,18,21,0)');
+  ctx.fillStyle = t; ctx.fillRect(0, 0, W, 420);
+}
+
+function grain(){
+  ctx.fillStyle = 'rgba(255,255,255,.018)';
+  for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
+}
+
+function draw(){
+  const first = ($('first').value.trim() || 'Your').toUpperCase();
+  const last = ($('last').value.trim() || 'Name').toUpperCase();
+  const weight = $('weight').value.trim();
+  const academy = $('academy').value.trim();
+  const belt = $('belt').value;
+  const photo = !!state.photo;
+
+  ctx.fillStyle = C.ink; ctx.fillRect(0, 0, W, H);
+  if (photo) drawPhoto();
+  else {
+    const g = ctx.createRadialGradient(780, 760, 0, 780, 760, 640);
+    g.addColorStop(0, 'rgba(243,238,230,.10)'); g.addColorStop(1, 'rgba(243,238,230,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  grain();
+
+  // header (below Instagram's top bar, 250 px)
+  monogram(M, 250, 84);
+  ctx.fillStyle = C.slate; ctx.font = font(600, 22, MONO);
+  spaced('EUROPEAN MASTERS LEAGUE', M + 108, 284, 3);
+  ctx.fillStyle = C.bone; spaced('BRUSSELS · 24.04.2027', M + 108, 320, 3);
+
+  // athlete block is anchored to the coral bar; the headline sits above it
+  const barY = H - 340 - 24;
+  const ns = Math.min(fitSize(first, 800, D, 120, W - 2 * M), fitSize(last, 800, D, 120, W - 2 * M));
+  const academyY = barY - 50;
+  const tagsY = academy ? academyY - 44 - 64 : barY - 60 - 64;
+  const lastY = tagsY - 40, firstY = lastY - ns * .88, labelY = firstY - ns * .8 - 34;
+
+  const hs = photo ? 210 : 260;
+  const h1 = photo ? labelY - 110 - hs * 1.72 : 400 + hs * .7;
+  ctx.font = font(800, hs, D); ctx.fillStyle = C.bone;
+  ctx.fillText("I'M", M - 6, h1);
+  ctx.fillText('COMPE-', M - 6, h1 + hs * .86);
+  ctx.fillStyle = C.red; ctx.fillText('TING.', M - 6, h1 + hs * 1.72);
+
+  ctx.fillStyle = C.slate; ctx.font = font(600, 24, MONO);
+  spaced('ATHLETE' + (belt ? ' · ' + belt.toUpperCase() + ' BELT' : ''), M, labelY, 4);
+  ctx.font = font(800, ns, D); ctx.fillStyle = C.bone;
+  ctx.fillText(first, M - 3, firstY);
+  ctx.fillText(last, M - 3, lastY);
+
+  let x = M;
+  x += tag(state.age, x, tagsY, true) + 14;
+  const discs = state.disc === 'Gi + No-Gi' ? ['GI', 'NO-GI'] : [state.disc.toUpperCase()];
+  discs.forEach(d => { x += tag(d, x, tagsY, false) + 14; });
+  if (weight) tag(weight.toUpperCase(), x, tagsY, false);
+
+  if (academy) { ctx.fillStyle = C.slate; ctx.font = font(600, 26, MONO); spaced(academy.toUpperCase(), M, academyY, 3); }
+
+  // coral bar closes the layout; the bottom 340 px stay empty for Instagram's UI
+  const bw = (W - 2 * M) / 8;
+  for (let i = 0; i < 8; i++) { ctx.fillStyle = i % 2 ? C.black : C.red; ctx.fillRect(M + i * bw, barY, Math.ceil(bw), 24); }
+}
+
+function fileName(){
+  const n = [$('first').value, $('last').value].join('-').trim().replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
+  return `EML-im-competing${n ? '-' + n : ''}.png`;
+}
+$('dl').onclick = () => cv.toBlob(b => {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fileName(); a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}, 'image/png');
+
+// on phones, share straight to Instagram via the system share sheet
+if (navigator.canShare && navigator.canShare({files: [new File([''], 'x.png', {type: 'image/png'})]})) {
+  $('share').hidden = false;
+  $('share').onclick = () => cv.toBlob(b => navigator.share({files: [new File([b], fileName(), {type: 'image/png'})]}).catch(() => {}), 'image/png');
+}
+
+$('photo').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const img = new Image(); img.onload = () => { state.photo = img; draw(); }; img.src = URL.createObjectURL(f);
+};
+$('nophoto').onclick = () => { state.photo = null; $('photo').value = ''; draw(); };
+['first', 'last', 'weight', 'academy', 'belt'].forEach(id => $(id).addEventListener('input', draw));
+
+// prefilled links, e.g. ?first=Marc&last=Lemaire&age=M2&disc=Gi&weight=-82.3%20kg&academy=Northside%20BJJ
+const q = new URLSearchParams(location.search);
+['first', 'last', 'weight', 'academy', 'belt'].forEach(id => { if (q.get(id)) $(id).value = q.get(id); });
+[['age', 'age'], ['disc', 'disc']].forEach(([key, el]) => {
+  const v = q.get(key); const b = [...$(el).children].find(x => x.textContent.split(' ')[0] === v || x.textContent === v);
+  if (b) b.click();
+});
+
+Promise.all([
+  document.fonts.load(font(800, 100, D)), document.fonts.load(font(900, 100, D)),
+  document.fonts.load(font(600, 20, MONO)), document.fonts.load(font(500, 20, B)),
+]).finally(draw);
+draw();
+</script>
+</body>
+</html>
